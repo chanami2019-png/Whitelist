@@ -360,7 +360,29 @@ LocalPlayer.CharacterAdded:Connect(function()
     if _G.SelectedToolName then ToolDropdown:SetValue(_G.SelectedToolName) end
 end)
 
--- Auto R (Observation) — Main tab copy
+-- Haki helper functions
+local function getHakiPercent()
+    local ok, result = pcall(function()
+        local f = LocalPlayer.PlayerGui.HealthBar.Frame.Haki.Frame
+        return (f.AbsoluteSize.X / 150) * 100
+    end)
+    return ok and result or 0
+end
+local function isObservationActive()
+    local ok, result = pcall(function()
+        local obs = LocalPlayer.PlayerGui.HealthBar.Frame.Status.Observation
+        return obs and obs.Visible
+    end)
+    return ok and result
+end
+local function isHakiActive()
+    local ok, result = pcall(function()
+        return LocalPlayer.PlayerGui.HealthBar.Frame.Status:FindFirstChild("Haki") ~= nil
+    end)
+    return ok and result
+end
+
+-- Auto R (Observation) — Main tab
 local MainAutoRToggle = Tabs.Main:AddToggle("MainAutoR", { Title = "Auto R (Observation)", Default = false })
 MainAutoRToggle:OnChanged(function(state)
     _G.AutoR = state
@@ -633,27 +655,6 @@ task.spawn(function()
     end
 end)
 
--- Haki helper functions (ใช้ใน Haki tab)
-local function getHakiPercent()
-    local ok, result = pcall(function()
-        local f = LocalPlayer.PlayerGui.HealthBar.Frame.Haki.Frame
-        return (f.AbsoluteSize.X / 150) * 100
-    end)
-    return ok and result or 0
-end
-local function isObservationActive()
-    local ok, result = pcall(function()
-        local obs = LocalPlayer.PlayerGui.HealthBar.Frame.Status.Observation
-        return obs and obs.Visible
-    end)
-    return ok and result
-end
-local function isHakiActive()
-    local ok, result = pcall(function()
-        return LocalPlayer.PlayerGui.HealthBar.Frame.Status:FindFirstChild("Haki") ~= nil
-    end)
-    return ok and result
-end
 
 Tabs.Main:AddParagraph({ Title = "Items", Content = "" })
 
@@ -3533,54 +3534,6 @@ HakiClickToggle:OnChanged(function(state)
         end)
     end
 end)
-
--- Auto R (Observation) — Haki tab
-_G.AutoR = false
-local HakiToggle = Tabs.Haki:AddToggle("AutoRHakiToggle", { Title = "Auto R (Observation)", Default = false })
-HakiToggle:OnChanged(function(state)
-    _G.AutoR = state
-    if state then
-        task.spawn(function()
-            while _G.AutoR do
-                if not isObservationActive() and getHakiPercent() >= 80 then
-                    repeat
-                        if not _G.AutoR then break end
-                        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.R, false, game)
-                        task.wait(0.05)
-                        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.R, false, game)
-                        task.wait(0.2)
-                    until isObservationActive() or not _G.AutoR
-                end
-                task.wait(0.5)
-            end
-        end)
-    end
-end)
-HakiToggle:SetValue(false)
-
--- Auto Q (Haki) — Haki tab
-_G.AutoQ = false
-local HakiQToggle = Tabs.Haki:AddToggle("AutoQHakiToggle", { Title = "Auto Q (Haki)", Default = false })
-HakiQToggle:OnChanged(function(state)
-    _G.AutoQ = state
-    if state then
-        task.spawn(function()
-            while _G.AutoQ do
-                if not isHakiActive() and getHakiPercent() >= 80 then
-                    repeat
-                        if not _G.AutoQ then break end
-                        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Q, false, game)
-                        task.wait(0.05)
-                        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Q, false, game)
-                        task.wait(0.2)
-                    until isHakiActive() or not _G.AutoQ
-                end
-                task.wait(0.5)
-            end
-        end)
-    end
-end)
-HakiQToggle:SetValue(false)
 
 end -- if isAdmin (Haki tab)
 
