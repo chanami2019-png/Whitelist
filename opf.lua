@@ -655,6 +655,67 @@ task.spawn(function()
     end
 end)
 
+-- Auto Respawn (ตายแล้วกดเกิดใหม่อัตโนมัติ)
+_G.AutoRespawn = false
+local RespawnToggle = Tabs.Main:AddToggle("AutoRespawn", { Title = "Auto Respawn", Default = false })
+RespawnToggle:OnChanged(function(state)
+    _G.AutoRespawn = state
+    if state then
+        task.spawn(function()
+            while _G.AutoRespawn do
+                pcall(function()
+                    local char = LocalPlayer.Character
+                    local hum = char and char:FindFirstChildOfClass("Humanoid")
+                    if hum and hum.Health <= 0 then
+                        local resetBindable = game:GetService("StarterGui"):FindFirstChild("ResetButtonCallback")
+                        if resetBindable and resetBindable:IsA("BindableEvent") then
+                            resetBindable:Fire()
+                        else
+                            hum.Health = 0
+                        end
+                    end
+                end)
+                task.wait(1)
+            end
+        end)
+    end
+end)
+
+-- Auto Respawn + Spawn (ตายแล้วเกิดใหม่ + กดเกิดอัตโนมัติ)
+_G.AutoRespawnSpawn = false
+local RespawnSpawnToggle = Tabs.Main:AddToggle("AutoRespawnSpawn", { Title = "Auto Respawn + Spawn", Default = false })
+RespawnSpawnToggle:OnChanged(function(state)
+    _G.AutoRespawnSpawn = state
+    if state then
+        task.spawn(function()
+            while _G.AutoRespawnSpawn do
+                pcall(function()
+                    local char = LocalPlayer.Character
+                    local hum = char and char:FindFirstChildOfClass("Humanoid")
+                    if hum and hum.Health <= 0 then
+                        local resetBindable = game:GetService("StarterGui"):FindFirstChild("ResetButtonCallback")
+                        if resetBindable and resetBindable:IsA("BindableEvent") then
+                            resetBindable:Fire()
+                        else
+                            hum.Health = 0
+                        end
+                        task.wait(2)
+                        local loadGui = LocalPlayer.PlayerGui:FindFirstChild("Load")
+                        if loadGui and loadGui.Enabled then
+                            local loadButton = loadGui.Frame:FindFirstChild("Load")
+                            if loadButton then
+                                local func = nil
+                                for _, con in pairs(getconnections(loadButton.Activated)) do func = con.Function break end
+                                if func then pcall(func) end
+                            end
+                        end
+                    end
+                end)
+                task.wait(1)
+            end
+        end)
+    end
+end)
 
 Tabs.Main:AddParagraph({ Title = "Items", Content = "" })
 
